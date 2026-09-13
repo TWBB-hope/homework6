@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>校园自习室数据看板</title>
+  <link href="https://cdn.staticfile.org/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .chart-box { height: 360px; }
+    #status { display: none; }
+    .room-row.active { background-color: #cfe2ff; }
+  </style>
+</head>
+<body class="container py-4">
+  <header>
+    <h1 class="h3">校园自习室数据看板</h1>
+    <p class="text-muted" id="sub-title">数据来源：课程统一数据集（教学演示数据，非真实统计）</p>
+  </header>
+
+  <p id="status" class="alert alert-warning"></p>
+
+  <!-- jQuery交互：按楼栋筛选 -->
+  <section class="mb-3" id="filter">
+    <span class="me-2 text-muted small">按楼栋筛选：</span>
+    <button class="btn btn-sm btn-outline-primary filter-btn active" data-building="全部">全部</button>
+    <button class="btn btn-sm btn-outline-primary filter-btn" data-building="楠苑">楠苑</button>
+    <button class="btn btn-sm btn-outline-primary filter-btn" data-building="梓苑">梓苑</button>
+    <button class="btn btn-sm btn-outline-primary filter-btn" data-building="图书馆">图书馆</button>
+    <button class="btn btn-sm btn-outline-primary filter-btn" data-building="理科楼">理科楼</button>
+    <button class="btn btn-sm btn-outline-primary filter-btn" data-building="文科楼">文科楼</button>
+  </section>
+
+  <section class="row g-3 mb-4" id="cards"></section>
+
+  <section class="row g-3 mb-4">
+    <div class="col-lg-6">
+      <h2 class="h5">各楼栋座位与在座人数（ECharts柱状图）</h2>
+      <div id="bar-chart" class="chart-box"></div>
+    </div>
+    <div class="col-lg-6">
+      <h2 class="h5">各楼栋使用率（Chart.js条形图）</h2>
+      <div class="chart-box"><canvas id="usage-chart"></canvas></div>
+    </div>
+  </section>
+
+  <section class="mb-4">
+    <h2 class="h5">自习室明细</h2>
+    <table class="table table-sm table-hover align-middle bg-white">
+      <thead>
+        <tr><th>名称</th><th>楼栋</th><th>座位数</th><th>在座</th><th>使用率</th><th>状态</th><th>开放时间</th></tr>
+      </thead>
+      <tbody id="room-table"></tbody>
+    </table>
+  </section>
+
+  <script src="https://cdn.staticfile.org/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://cdn.staticfile.org/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.staticfile.org/echarts/5.4.3/echarts.min.js"></script>
+  <script src="https://cdn.staticfile.org/chart.js/4.4.1/chart.umd.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
