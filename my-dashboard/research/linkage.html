@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>研究任务二：图表联动</title>
+  <link href="https://cdn.staticfile.org/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <style>.chart-box { height: 360px; }</style>
+</head>
+<body class="container py-4">
+  <h1 class="h4">图表联动研究：点击柱状图品类，折线图自动过滤</h1>
+  <p class="text-muted">点击左图任一品类的柱子，右图只显示该品类的借阅趋势；点击空白处恢复全部。</p>
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <h2 class="h6">各品类总借阅量（点击柱子）</h2>
+      <div id="bar-chart" class="chart-box"></div>
+    </div>
+    <div class="col-lg-6">
+      <h2 class="h6">月度借阅趋势（联动过滤）</h2>
+      <div id="line-chart" class="chart-box"></div>
+    </div>
+  </div>
+  <script src="https://cdn.staticfile.org/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://cdn.staticfile.org/echarts/5.4.3/echarts.min.js"></script>
+  <script>
+    let fullData = null;
+    const barChart = echarts.init(document.querySelector('#bar-chart'));
+    const lineChart = echarts.init(document.querySelector('#line-chart'));
+
+    const renderLine = (seriesList) => {
+      lineChart.setOption({
+        title: { text: '月度借阅趋势（单位：册）', left: 'center' },
+        tooltip: { trigger: 'axis' },
+        legend: { bottom: 0 },
+        xAxis: { data: fullData.months },
+        yAxis: { name: '册' },
+        series: seriesList
+      }, true); // notMerge=true：整体替换，实现"过滤"效果
+    };
+
+    const loadData = async () => {
+      const response = await fetch('../data/books.json');
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      fullData = await response.json();
+
+      barChart.setOption({
+        title: { text: '各品类总借阅量（单位：册）', left: 'center' },
+        tooltip: { trigger: 'item' },
+        xAxis: { data: fullData.series.map(s => s.category) },
+        yAxis: { name: '册' },
+        series: [{
+          type: 'bar',
+          data: fullData.series.map(s => ({
+            name: s.category,
+            value: s.counts.reduce((a, b) => a + b, 0)
+          }))
+        }]
+      });
+      renderLine(fullData.series.map(s => ({ name: s.category, type: 'line', data: s.counts })));
+    };
+
+    // 联动核心：ECharts的click事件参数data里带有所点分类的名字
+    barChart.on('click', (params) => {
+      const picked = fullData.series.filter(s => s.category === params.name);
+      renderLine(picked.map(s => ({ name: s.category, type: 'line', data: s.counts })));
+    });
+    // 点击柱状图空白处恢复全部
+    barChart.getZr().on('click', (event) => {
+      if (!event.target) {
+        renderLine(fullData.series.map(s => ({ name: s.category, type: 'line', data: s.counts })));
+      }
+    });
+
+    loadData();
+  </script>
+</body>
+</html>

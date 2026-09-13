@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>研究任务三：误导图表修复案例</title>
+  <link href="https://cdn.staticfile.org/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <style>.chart-box { height: 360px; }</style>
+</head>
+<body class="container py-4">
+  <h1 class="h4">误导图表修复案例：截断y轴的"文学 vs 科技"借阅对比</h1>
+  <p class="text-muted">数据来源：课程统一数据集（books.json，取文学与科技两个品类12个月合计）</p>
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <h2 class="h6 text-danger">误导版本：y轴从4000开始（截断坐标轴）</h2>
+      <div id="bad-chart" class="chart-box"></div>
+    </div>
+    <div class="col-lg-6">
+      <h2 class="h6 text-success">诚实版本：y轴从0开始</h2>
+      <div id="good-chart" class="chart-box"></div>
+    </div>
+  </div>
+  <script src="https://cdn.staticfile.org/echarts/5.4.3/echarts.min.js"></script>
+  <script>
+    const loadData = async () => {
+      const response = await fetch('../data/books.json');
+      const data = await response.json();
+      const totals = data.series
+        .filter(s => s.category === '文学' || s.category === '科技')
+        .map(s => ({
+          name: s.category,
+          value: s.counts.reduce((a, b) => a + b, 0)
+        }));
+
+      const base = {
+        tooltip: {},
+        xAxis: { data: totals.map(t => t.name) },
+        series: [{ type: 'bar', data: totals }]
+      };
+
+      echarts.init(document.querySelector('#bad-chart')).setOption({
+        ...base,
+        title: { text: '误导版：文学借阅量远超科技？（y轴4000起）', left: 'center', textStyle: { fontSize: 13 } },
+        yAxis: { min: 4000, max: 4800, name: '册' }
+      });
+
+      echarts.init(document.querySelector('#good-chart')).setOption({
+        ...base,
+        title: { text: '诚实版：文学约为科技的2.6倍（y轴从0起）', left: 'center', textStyle: { fontSize: 13 } },
+        yAxis: { min: 0, max: 4800, name: '册' }
+      });
+    };
+    loadData();
+  </script>
+</body>
+</html>

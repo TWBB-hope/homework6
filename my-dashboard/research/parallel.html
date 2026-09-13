@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>研究任务一：Promise.all 并行加载计时</title>
+  <link href="https://cdn.staticfile.org/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container py-4">
+  <h1 class="h4">并行请求研究：Promise.all 同时加载两份JSON</h1>
+  <p class="text-muted">数据来源：课程统一数据集（books.json 与 studyrooms.json）</p>
+  <p id="status" class="alert alert-warning">准备就绪</p>
+  <button id="run-parallel" class="btn btn-primary me-2">并行加载（Promise.all）</button>
+  <button id="run-serial" class="btn btn-outline-primary me-2">串行加载（逐个await）</button>
+  <ul id="log" class="mt-3 small"></ul>
+
+  <script src="https://cdn.staticfile.org/jquery/3.7.1/jquery.min.js"></script>
+  <script>
+    const log = (text) => $('#log').prepend($('<li>').text(text));
+
+    // 串行：前一个完成才开始后一个，总耗时 ≈ 两者之和
+    const loadSerial = async () => {
+      const t0 = performance.now();
+      $('#status').text('加载中...（串行）').show();
+      const r1 = await fetch('../data/books.json');
+      const books = await r1.json();
+      const r2 = await fetch('../data/studyrooms.json');
+      const rooms = await r2.json();
+      $('#status').hide();
+      return { total: performance.now() - t0, books, rooms };
+    };
+
+    // 并行：两份请求同时发出，总耗时 ≈ 较慢的那个
+    const loadParallel = async () => {
+      const t0 = performance.now();
+      $('#status').text('加载中...（并行）').show();
+      const [booksRes, roomsRes] = await Promise.all([
+        fetch('../data/books.json'),
+        fetch('../data/studyrooms.json')
+      ]);
+      if (!booksRes.ok) throw new Error('books.json HTTP ' + booksRes.status);
+      if (!roomsRes.ok) throw new Error('studyrooms.json HTTP ' + roomsRes.status);
+      const [books, rooms] = await Promise.all([booksRes.json(), roomsRes.json()]);
+      $('#status').hide();
+      return { total: performance.now() - t0, books, rooms };
+    };
+
+    $('#run-parallel').on('click', async () => {
+      try {
+        const { total, books, rooms } = await loadParallel();
+        log(`并行：${total.toFixed(2)}ms（图书系列${books.series.length}组，自习室${rooms.rooms.length}间）——"全部完成"`);
+      } catch (e) {
+        log('并行加载失败：' + e.message);
+      }
+    });
+
+    $('#run-serial').on('click', async () => {
+      try {
+        const { total, books, rooms } = await loadSerial();
+        log(`串行：${total.toFixed(2)}ms（图书系列${books.series.length}组，自习室${rooms.rooms.length}间）——"全部完成"`);
+      } catch (e) {
+        log('串行加载失败：' + e.message);
+      }
+    });
+  </script>
+</body>
+</html>
