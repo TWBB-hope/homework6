@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>研究任务二：图表联动</title>
-  <link href="https://cdn.staticfile.org/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="../../libs/bootstrap.min.css" rel="stylesheet">
   <style>.chart-box { height: 360px; }</style>
 </head>
 <body class="container py-4">
@@ -19,8 +19,8 @@
       <div id="line-chart" class="chart-box"></div>
     </div>
   </div>
-  <script src="https://cdn.staticfile.org/jquery/3.7.1/jquery.min.js"></script>
-  <script src="https://cdn.staticfile.org/echarts/5.4.3/echarts.min.js"></script>
+  <script src="../../libs/jquery-3.7.1.min.js"></script>
+  <script src="../../libs/echarts.min.js"></script>
   <script>
     let fullData = null;
     const barChart = echarts.init(document.querySelector('#bar-chart'));
